@@ -1,0 +1,8 @@
+.env
+.nuxt
+.output
+node_modules
+tests
+e2e
+playwright-report
+test-results

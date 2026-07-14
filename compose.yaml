@@ -1,0 +1,82 @@
+name: taskflow
+
+x-api-environment: &api-environment
+  APP_NAME: TaskFlow
+  APP_ENV: production
+  APP_DEBUG: "false"
+  APP_URL: http://localhost
+  LOG_CHANNEL: stderr
+  DB_CONNECTION: sqlite
+  DB_DATABASE: /var/www/html/database/database.sqlite
+  SESSION_DRIVER: database
+  SESSION_DOMAIN: null
+  SESSION_SECURE_COOKIE: "false"
+  SESSION_SAME_SITE: lax
+  SANCTUM_STATEFUL_DOMAINS: localhost,localhost:80,127.0.0.1,127.0.0.1:80
+  CORS_ALLOWED_ORIGINS: http://localhost
+  CACHE_STORE: database
+  QUEUE_CONNECTION: sync
+
+services:
+  migrate:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: production
+    environment: *api-environment
+    command: ["sh", "-c", "touch database/database.sqlite && php artisan migrate --force && php artisan db:seed --force"]
+    volumes:
+      - todo-data:/var/www/html/database
+      - runtime-data:/var/www/runtime
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: production
+    environment: *api-environment
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      - todo-data:/var/www/html/database
+      - runtime-data:/var/www/runtime
+    healthcheck:
+      test: ["CMD", "php-fpm", "-t"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+      target: production
+    environment:
+      NUXT_API_INTERNAL_BASE_URL: http://nginx
+      NUXT_PUBLIC_SITE_URL: http://localhost
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    depends_on:
+      api:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    restart: unless-stopped
+
+volumes:
+  todo-data:
+  runtime-data:

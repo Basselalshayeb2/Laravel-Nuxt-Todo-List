@@ -1,0 +1,391 @@
+openapi: 3.0.3
+info:
+  title: 'TaskFlow API Documentation'
+  description: 'The REST API used by the TaskFlow Nuxt application.'
+  version: 1.0.0
+servers:
+  -
+    url: 'http://localhost'
+tags:
+  -
+    name: Authentication
+    description: ''
+  -
+    name: Tasks
+    description: ''
+components:
+  securitySchemes:
+    default:
+      type: apiKey
+      name: Cookie
+      in: header
+      description: 'Authentication is browser-managed. Do not store a bearer token in localStorage.'
+security:
+  -
+    default: []
+paths:
+  /api/auth/login:
+    post:
+      summary: 'Log in'
+      operationId: logIn
+      description: 'Start a stateful Sanctum session.'
+      parameters: []
+      responses: {  }
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: 'The seeded account email address. Must be a valid email address.'
+                  example: user@example.com
+                password:
+                  type: string
+                  description: 'The account password.'
+                  example: Password123!
+              required:
+                - email
+                - password
+      security: []
+  /api/auth/logout:
+    post:
+      summary: 'Log out'
+      operationId: logOut
+      description: 'Invalidate the current session and CSRF token.'
+      parameters:
+        -
+          in: header
+          name: Cookie
+          description: ''
+          example: '{YOUR_SESSION_COOKIE}'
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Authentication
+  /api/user:
+    get:
+      summary: 'Current user'
+      operationId: currentUser
+      description: ''
+      parameters:
+        -
+          in: header
+          name: Cookie
+          description: ''
+          example: '{YOUR_SESSION_COOKIE}'
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: false
+                  message: 'Authentication is required.'
+                  code: UNAUTHENTICATED
+                  errors: {  }
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Authentication is required.'
+                  code:
+                    type: string
+                    example: UNAUTHENTICATED
+                  errors:
+                    type: object
+                    properties: {  }
+      tags:
+        - Authentication
+  /api/tasks:
+    get:
+      summary: 'List tasks'
+      operationId: listTasks
+      description: 'Users see their tasks; administrators see every task.'
+      parameters:
+        -
+          in: query
+          name: status
+          description: 'Filter by pending, in_progress, or completed.'
+          example: pending
+          required: false
+          schema:
+            type: string
+            description: 'Filter by pending, in_progress, or completed.'
+            example: pending
+            enum:
+              - pending
+              - in_progress
+              - completed
+            nullable: true
+        -
+          in: query
+          name: search
+          description: 'Search task titles and descriptions. Must not be greater than 255 characters.'
+          example: documentation
+          required: false
+          schema:
+            type: string
+            description: 'Search task titles and descriptions. Must not be greater than 255 characters.'
+            example: documentation
+            nullable: true
+        -
+          in: query
+          name: sort
+          description: 'Sort by due_date, status, title, created_at, or updated_at.'
+          example: due_date
+          required: false
+          schema:
+            type: string
+            description: 'Sort by due_date, status, title, created_at, or updated_at.'
+            example: due_date
+            enum:
+              - due_date
+              - status
+              - title
+              - created_at
+              - updated_at
+            nullable: true
+        -
+          in: query
+          name: direction
+          description: 'Sort direction: asc or desc.'
+          example: asc
+          required: false
+          schema:
+            type: string
+            description: 'Sort direction: asc or desc.'
+            example: asc
+            enum:
+              - asc
+              - desc
+            nullable: true
+        -
+          in: query
+          name: page
+          description: 'One-based page number. Must be at least 1.'
+          example: 1
+          required: false
+          schema:
+            type: integer
+            description: 'One-based page number. Must be at least 1.'
+            example: 1
+            nullable: true
+        -
+          in: query
+          name: per_page
+          description: 'Items per page, from 1 to 100. Must be at least 1. Must not be greater than 100.'
+          example: 10
+          required: false
+          schema:
+            type: integer
+            description: 'Items per page, from 1 to 100. Must be at least 1. Must not be greater than 100.'
+            example: 10
+            nullable: true
+        -
+          in: header
+          name: Cookie
+          description: ''
+          example: '{YOUR_SESSION_COOKIE}'
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: false
+                  message: 'Authentication is required.'
+                  code: UNAUTHENTICATED
+                  errors: {  }
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Authentication is required.'
+                  code:
+                    type: string
+                    example: UNAUTHENTICATED
+                  errors:
+                    type: object
+                    properties: {  }
+      tags:
+        - Tasks
+    post:
+      summary: 'Create a task'
+      operationId: createATask
+      description: ''
+      parameters:
+        -
+          in: header
+          name: Cookie
+          description: ''
+          example: '{YOUR_SESSION_COOKIE}'
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Tasks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 'A concise task title between 3 and 255 characters. Must be at least 3 characters. Must not be greater than 255 characters.'
+                  example: 'Write project documentation'
+                description:
+                  type: string
+                  description: 'Optional task context.'
+                  example: 'Document setup and API behavior.'
+                  nullable: true
+                due_date:
+                  type: string
+                  description: 'Optional deadline in YYYY-MM-DD format. Must be a valid date in the format <code>Y-m-d</code>.'
+                  example: '2026-07-20'
+                  nullable: true
+                status:
+                  type: string
+                  description: 'Task status; defaults to pending.'
+                  example: pending
+                  enum:
+                    - pending
+                    - in_progress
+                    - completed
+                user_id:
+                  type: string
+                  description: ''
+                  example: null
+              required:
+                - title
+  '/api/tasks/{task_id}':
+    get:
+      summary: 'Get a task'
+      operationId: getATask
+      description: ''
+      parameters:
+        -
+          in: header
+          name: Cookie
+          description: ''
+          example: '{YOUR_SESSION_COOKIE}'
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: false
+                  message: 'Authentication is required.'
+                  code: UNAUTHENTICATED
+                  errors: {  }
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 'Authentication is required.'
+                  code:
+                    type: string
+                    example: UNAUTHENTICATED
+                  errors:
+                    type: object
+                    properties: {  }
+      tags:
+        - Tasks
+    patch:
+      summary: 'Update a task'
+      operationId: updateATask
+      description: ''
+      parameters:
+        -
+          in: header
+          name: Cookie
+          description: ''
+          example: '{YOUR_SESSION_COOKIE}'
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Tasks
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 'Replacement title between 3 and 255 characters. Must be at least 3 characters. Must not be greater than 255 characters.'
+                  example: 'Publish project documentation'
+                description:
+                  type: string
+                  description: 'Replacement context or null.'
+                  example: 'Complete the final review.'
+                  nullable: true
+                due_date:
+                  type: string
+                  description: 'Replacement YYYY-MM-DD deadline or null. Must be a valid date in the format <code>Y-m-d</code>.'
+                  example: '2026-07-21'
+                  nullable: true
+                status:
+                  type: string
+                  description: 'Replacement status.'
+                  example: in_progress
+                  enum:
+                    - pending
+                    - in_progress
+                    - completed
+                user_id:
+                  type: string
+                  description: ''
+                  example: null
+    delete:
+      summary: 'Delete a task'
+      operationId: deleteATask
+      description: ''
+      parameters:
+        -
+          in: header
+          name: Cookie
+          description: ''
+          example: '{YOUR_SESSION_COOKIE}'
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Tasks
+    parameters:
+      -
+        in: path
+        name: task_id
+        description: 'The ID of the task.'
+        example: 1
+        required: true
+        schema:
+          type: integer

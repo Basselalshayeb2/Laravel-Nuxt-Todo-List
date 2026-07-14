@@ -1,2 +1,4 @@
 User-Agent: *
-Disallow:
+Allow: /
+Disallow: /login
+Disallow: /tasks

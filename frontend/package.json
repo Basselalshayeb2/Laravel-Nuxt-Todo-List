@@ -5,9 +5,12 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
-    "generate": "nuxt generate",
+    "lint": "eslint .",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "typecheck": "nuxt typecheck"
   },
   "dependencies": {
     "@nuxt/ui": "^4.9.0",
@@ -18,10 +21,14 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@nuxt/eslint": "^1.16.0",
     "@nuxt/test-utils": "^4.0.3",
     "@playwright/test": "^1.61.1",
     "@vue/test-utils": "^2.4.11",
+    "eslint": "^10.7.0",
     "happy-dom": "^20.10.6",
-    "vitest": "^4.1.10"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10",
+    "vue-tsc": "^3.3.7"
   }
 }
